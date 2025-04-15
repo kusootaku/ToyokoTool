@@ -106,6 +106,7 @@
  <h1>ToYokoTool</h1>
 
  <h2>カウンター冷蔵庫補充</h2>
+ <p>ここではカウンター下のコーラや緑茶、冷蔵庫のストロング缶を客席側在庫からもってくるためのカウントができます</p>
  <table id="reizoukoTable">
   <thead>
    <tr>
@@ -135,6 +136,8 @@
 
 
  <h2>買い出し補充(客席)</h2>
+ <p>ここでは客席在庫の個数を入力すると買い出しの数を計算できます</p>
+ <p>上で補充できなかった場合はマイナスの数をいれてください。(コーラが2本必要だが1本しかない場合は-1)</p>
  <table id="kaidashiKyakuTable">
   <thead>
    <tr>
@@ -162,6 +165,7 @@
  </table>
 
  <h2>買い出し補充(バック)</h2>
+ <p>ここではバック在庫の個数を入力すると買い出しの数を計算できます</p>
  <table id="kaidashiBackTable">
   <thead>
    <tr>
@@ -205,6 +209,7 @@
   </select> 個
  </div>
  <h2>報告用</h2>
+ <p>特に買い出しに行く必要はないが在庫報告する必要のあるバック在庫を入力します</p>
  <table id="houkokuTable">
   <thead>
    <tr>
@@ -225,6 +230,7 @@
   </tbody>
  </table>
 
+ <p><br><br>以上の表を入力し終わったら下のボタンを押してください。買い出しリストと報告文章が作成されます</p>
  <button onclick="generateShoppingListAndReport()">買い出しリスト＆在庫報告生成</button>
 
  <label for="shoppingListOutput">買い出しリスト:</label>
