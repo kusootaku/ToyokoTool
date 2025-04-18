@@ -186,6 +186,8 @@
    <tr><td>カフェパリ(サクランボ)</td><td><input type="number" id="kaidashi_cafe_paris_sakuranbo"></td><td><input type="number" id="kaidashi_cafe_paris_sakuranbo_cases" class="case-input"></td><td>1</td><td class="result" id="kaidashi_result_cafe_paris_sakuranbo"></td></tr>
    <tr><td>マティーニブリュット</td><td><input type="number" id="kaidashi_martini_brut"></td><td><input type="number" id="kaidashi_martini_brut_cases" class="case-input"></td><td>1</td><td class="result" id="kaidashi_result_martini_brut"></td></tr>
    <tr><td>マティーニアスティ</td><td><input type="number" id="kaidashi_martini_asti"></td><td><input type="number" id="kaidashi_martini_asti_cases" class="case-input"></td><td>1</td><td class="result" id="kaidashi_result_martini_asti"></td></tr>
+   <tr><td>テキーラ(ゴールド)</td><td><input type="number" id="kaidashi_tequila_gold"></td><td><input type="number" id="kaidashi_tequila_gold_cases" class="case-input"></td><td>1</td><td class="result" id="kaidashi_result_tequila_gold"></td></tr>
+   <tr><td>テキーラ(シルバー)</td><td><input type="number" id="kaidashi_tequila_silver"></td><td><input type="number" id="kaidashi_tequila_silver_cases" class="case-input"></td><td>1</td><td class="result" id="kaidashi_result_tequila_silver"></td></tr>
    <tr><td>ヨーグレット</td><td><input type="number" id="kaidashi_yoguret"></td><td><input type="number" id="kaidashi_yoguret_cases" class="case-input"></td><td>6</td><td class="result" id="kaidashi_result_yoguret"></td></tr>
    <tr><td>ハイレモン</td><td><input type="number" id="kaidashi_hilemon"></td><td><input type="number" id="kaidashi_hilemon_cases" class="case-input"></td><td>6</td><td class="result" id="kaidashi_result_hilemon"></td></tr>
    <tr><td>ストロー予備</td><td><input type="number" id="kaidashi_straw"></td><td><input type="number" id="kaidashi_straw_cases" class="case-input"></td><td>1</td><td class="result" id="kaidashi_result_straw"></td></tr>
@@ -225,9 +227,7 @@
    <tr><td>ティッシュ</td><td><input type="number" id="houkoku_tissue"></td></tr>
    <tr><td>ペーパータオル</td><td><input type="number" id="houkoku_paper_towel"></td></tr>
    <tr><td>おしぼり予備</td><td><input type="number" id="houkoku_oshibori"></td></tr>
-   <tr><td>テキーラ(ゴールド)</td><td><input type="number" id="houkoku_tequila_gold"></td></tr>
-   <tr><td>テキーラ(シルバー)</td><td><input type="number" id="houkoku_tequila_silver"></td></tr>
-  </tbody>
+   </tbody>
  </table>
 
  <p><br><br>以上の表を入力し終わったら下のボタンを押してください。買い出しリストと報告文章が作成されます</p>
@@ -319,10 +319,11 @@
        { id: "kaidashi_cafe_paris_sakuranbo", limit: 1, name: "カフェパリ(サクランボ)" },
        { id: "kaidashi_martini_brut", limit: 1, name: "マティーニブリュット" },
        { id: "kaidashi_martini_asti", limit: 1, name: "マティーニアスティ" },
+       { id: "kaidashi_tequila_gold", limit: 1, name: "テキーラ(ゴールド)" }, // 追加
+       { id: "kaidashi_tequila_silver", limit: 1, name: "テキーラ(シルバー)" }, // 追加
        { id: "kaidashi_yoguret", limit: 6, name: "ヨーグレット" },
        { id: "kaidashi_hilemon", limit: 6, name: "ハイレモン" }, { id: "kaidashi_straw", limit: 1, name: "ストロー予備" },
        { id: "kaidashi_waribashi", limit: 1, name: "割り箸予備" }, { id: "kaidashi_wet_tissue", limit: 1, name: "ウェットティッシュ予備" },
-       // { id: "kaidashi_garbage_bag", limit: 1, name: "ゴミ袋" }, // ここから削除
    ];
 
     kaidashiBackItems.forEach(item => {
@@ -373,13 +374,7 @@
    const garbageNeeded = parseInt(garbageNeededSelect.value) || 0;
    if (garbageNeeded > 0) {
        shoppingList += "・ゴミ袋：" + garbageNeeded + "個\n";
-       // 必要ならドロップダウンをハイライトしても良い
-       // garbageNeededSelect.style.backgroundColor = 'yellow';
-   } else {
-       // 不要ならハイライト解除
-       // garbageNeededSelect.style.backgroundColor = '';
    }
-
 
    // --- 買い出しリストをテキストエリアに出力 ---
    document.getElementById("shoppingListOutput").value = shoppingList;
@@ -395,16 +390,16 @@
        const reportedStockValue = getReportStock(item.id);
        report += "・" + item.name + "：" + (casesValue > 0 ? casesValue + "ケース" : reportedStockValue + "本") + "\n";
    });
-    kaidashiBackItems.forEach(item => { // ゴミ袋は含まれない
+    kaidashiBackItems.forEach(item => { // テキーラを含む
         const reportedStockValue = getReportStock(item.id);
-        const isSupply = item.name.includes('予備'); // ゴミ袋チェックを除外
+        const isSupply = item.name.includes('予備');
         const unit = isSupply ? "個" : "本";
-        if (!isSupply) {
+        if (!isSupply) { // 備品以外（飲み物）を報告
             report += "・" + item.name + "：" + reportedStockValue + unit + "\n";
         }
     });
-   report += "・テキーラ(ゴールド)：" + (parseInt(document.getElementById("houkoku_tequila_gold").value) || 0) + "本\n";
-   report += "・テキーラ(シルバー)：" + (parseInt(document.getElementById("houkoku_tequila_silver").value) || 0) + "本\n";
+   // report += "・テキーラ(ゴールド)：..." // kaidashiBackItemsのループで処理されるため削除
+   // report += "・テキーラ(シルバー)：..." // kaidashiBackItemsのループで処理されるため削除
    report += "\n<冷蔵庫内>\n";
    report += "・オリシャン：" + (parseInt(document.getElementById("houkoku_original_champagne").value) || 0) + "本\n";
    report += "・ノンアルオリシャン：" + (parseInt(document.getElementById("houkoku_non_alcohol_champagne").value) || 0) + "本\n";
@@ -414,11 +409,11 @@
    report += "・ティッシュ：" + (parseInt(document.getElementById("houkoku_tissue").value) || 0) + "箱\n";
    report += "・ペーパータオル：" + (parseInt(document.getElementById("houkoku_paper_towel").value) || 0) + "個\n";
    report += "・おしぼり予備：" + (parseInt(document.getElementById("houkoku_oshibori").value) || 0) + "個\n";
-    kaidashiBackItems.forEach(item => { // ゴミ袋は含まれない
+    kaidashiBackItems.forEach(item => { // 備品のみを報告
         const reportedStockValue = getReportStock(item.id);
-        const isSupply = item.name.includes('予備'); // ゴミ袋チェックを除外
+        const isSupply = item.name.includes('予備');
         if (isSupply) {
-            const unit = item.name === 'ゴミ袋' ? "個" : "個"; // ゴミ袋チェックは不要だが残しておく
+            const unit = "個";
             report += "・" + item.name + "：" + reportedStockValue + unit + "\n";
         }
     });
