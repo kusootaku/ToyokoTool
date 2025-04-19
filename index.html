@@ -45,7 +45,7 @@
    textarea {
     margin-top: 5px;
     width: 95%;
-    height: 100px;
+    /* height: 100px; */ /* 高さは内容に応じて自動調整されるようにコメントアウトも検討 */
     font-family: monospace;
     white-space: pre-wrap;
     font-size: 14px;
@@ -57,8 +57,11 @@
    #kaidashi_kleiner_text {
      height: 60px;
    }
-   #shoppingListOutput, #reportOutput {
-     height: 200px;
+   #shoppingListOutput {
+     height: 200px; /* 買い出しリストの高さは維持 */
+   }
+    #reportOutput {
+     height: 350px; /* 報告用テキストエリアの高さ */
    }
    tbody tr:nth-child(odd) {
     background-color: #f9f9f9;
@@ -222,12 +225,13 @@
   <tbody>
    <tr><td>オリシャン</td><td><input type="number" id="houkoku_original_champagne"></td></tr>
    <tr><td>ノンアルオリシャン</td><td><input type="number" id="houkoku_non_alcohol_champagne"></td></tr>
-   <tr><td>モエ</td><td><input type="number" id="houkoku_moet"></td></tr>
+   <tr><td>モエ予備(予備のみカウント)</td><td><input type="number" id="houkoku_moet"></td></tr>
+   <tr><td>ベルエポック</td><td><input type="number" id="houkoku_belle_epoque"></td></tr>
    <tr><td>伝票</td><td><input type="number" id="houkoku_denpyo"></td></tr>
    <tr><td>ティッシュ</td><td><input type="number" id="houkoku_tissue"></td></tr>
    <tr><td>ペーパータオル</td><td><input type="number" id="houkoku_paper_towel"></td></tr>
    <tr><td>おしぼり予備</td><td><input type="number" id="houkoku_oshibori"></td></tr>
-   </tbody>
+  </tbody>
  </table>
 
  <p><br><br>以上の表を入力し終わったら下のボタンを押してください。買い出しリストと報告文章が作成されます</p>
@@ -272,9 +276,9 @@
   // --- 買い出しリスト＆在庫報告生成 (連携) ---
   function generateShoppingListAndReport() {
    let shoppingList = "【買い出しリスト】\n";
-   let report = "";
+   let report = ""; // report変数をここで初期化
 
-   // --- 買い出し補充(客席)計算 ---
+   // --- 買い出し計算ロジック (変更なし) ---
    const kaidashiKyakuItems = [
        { id: "kaidashi_cola", limit: 0, name: "コーラ" }, { id: "kaidashi_ginger", limit: 0, name: "ジンジャー" },
        { id: "kaidashi_tansan", limit: 0, name: "炭酸水" }, { id: "kaidashi_ryokucha", limit: 0, name: "緑茶" },
@@ -283,7 +287,6 @@
        { id: "kaidashi_strong_lemon", limit: 0, name: "ストロングレモン" }, { id: "kaidashi_strong_greful", limit: 0, name: "ストロンググレフル" },
        { id: "kaidashi_strong_shikuwasa", limit: 0, name: "ストロングシークヮ" }, { id: "kaidashi_tanrei", limit: 0, name: "淡麗" },
    ];
-
     kaidashiKyakuItems.forEach(item => {
      const stockElement = document.getElementById(item.id);
      const casesElement = document.getElementById(item.id + "_cases");
@@ -309,9 +312,7 @@
          shoppingList += "・" + item.name + "：" + needed.toLocaleString() + unit + "\n";
      }
     });
-
-   // --- 買い出し補充(バック)計算 ---
-   const kaidashiBackItems = [ // ゴミ袋を除外
+   const kaidashiBackItems = [
        { id: "kaidashi_rin", limit: 1, name: "凛" }, { id: "kaidashi_shochu", limit: 1, name: "長次郎" },
        { id: "kaidashi_peach", limit: 1, name: "ピーチ" }, { id: "kaidashi_cassis", limit: 1, name: "カシス" },
        { id: "kaidashi_vodka", limit: 1, name: "ウォッカ" },
@@ -319,13 +320,12 @@
        { id: "kaidashi_cafe_paris_sakuranbo", limit: 1, name: "カフェパリ(サクランボ)" },
        { id: "kaidashi_martini_brut", limit: 1, name: "マティーニブリュット" },
        { id: "kaidashi_martini_asti", limit: 1, name: "マティーニアスティ" },
-       { id: "kaidashi_tequila_gold", limit: 1, name: "テキーラ(ゴールド)" }, // 追加
-       { id: "kaidashi_tequila_silver", limit: 1, name: "テキーラ(シルバー)" }, // 追加
+       { id: "kaidashi_tequila_gold", limit: 1, name: "テキーラ(ゴールド)" },
+       { id: "kaidashi_tequila_silver", limit: 1, name: "テキーラ(シルバー)" },
        { id: "kaidashi_yoguret", limit: 6, name: "ヨーグレット" },
        { id: "kaidashi_hilemon", limit: 6, name: "ハイレモン" }, { id: "kaidashi_straw", limit: 1, name: "ストロー予備" },
        { id: "kaidashi_waribashi", limit: 1, name: "割り箸予備" }, { id: "kaidashi_wet_tissue", limit: 1, name: "ウェットティッシュ予備" },
    ];
-
     kaidashiBackItems.forEach(item => {
      const stockElement = document.getElementById(item.id);
      const casesElement = document.getElementById(item.id + "_cases");
@@ -334,14 +334,15 @@
      const cases = parseFloat(casesElement.value) || 0;
      let needed = Math.max(0, item.limit - stock);
      let itemNeededForShopping = false;
-     const isSupply = item.name.includes('予備') || item.name.includes('ゴミ袋');
+     const isSupply = item.name.includes('予備') || item.name.includes('ゴミ袋') || item.name.includes('ヨーグレット') || item.name.includes('ハイレモン'); // ヨーグレット、ハイレモンも個数単位
      const unit = isSupply ? "個" : "本";
+     const caseUnit = (item.name.includes('ヨーグレット') || item.name.includes('ハイレモン') || item.name.includes('予備')) ? "セット" : "ケース"; // 備品系はセット表記
      const row = resultElement.closest("tr");
      if ((item.id === "kaidashi_yoguret" || item.id === "kaidashi_hilemon") && needed > 0 && cases === 0) {
          needed = Math.ceil(needed / 3) * 3;
      }
      if (cases > 0) {
-         resultElement.textContent = cases.toLocaleString() + (isSupply ? "セット" : "ケース");
+         resultElement.textContent = cases.toLocaleString() + caseUnit;
          row.classList.remove("needed-row");
      } else if (needed > 0) {
          resultElement.textContent = needed.toLocaleString() + unit;
@@ -355,8 +356,6 @@
          shoppingList += "・" + item.name + "：" + needed.toLocaleString() + unit + "\n";
      }
     });
-
-   // --- クライナー処理 ---
    const kleinerTextArea = document.getElementById("kaidashi_kleiner_text");
    const kleinerText = kleinerTextArea.value.trim();
    if (kleinerText) {
@@ -368,56 +367,56 @@
            }
        });
    }
-
-   // --- ゴミ袋処理 ---
    const garbageNeededSelect = document.getElementById("kaidashi_garbage_bag_needed");
    const garbageNeeded = parseInt(garbageNeededSelect.value) || 0;
    if (garbageNeeded > 0) {
        shoppingList += "・ゴミ袋：" + garbageNeeded + "個\n";
    }
-
-   // --- 買い出しリストをテキストエリアに出力 ---
    document.getElementById("shoppingListOutput").value = shoppingList;
 
-   // --- 在庫報告生成 ---
-   report = "<バック在庫>\n";
+   // --- 在庫報告生成 (フォーマットとアルコール除菌の処理を修正) ---
+   report = "【予備在庫確認リスト】\n";
+
    const getReportStock = (id) => {
-       const rawStock = parseInt(document.getElementById(id).value) || 0;
-       return Math.max(0, rawStock);
+     const element = document.getElementById(id);
+     // 要素が存在しない場合や値が無効な場合は0を返す
+     if (!element || element.value === "") return 0;
+     const rawStock = parseInt(element.value);
+     return isNaN(rawStock) ? 0 : Math.max(0, rawStock); // NaNチェックを追加
    };
-   kaidashiKyakuItems.forEach(item => {
-       const casesValue = parseFloat(document.getElementById(item.id + "_cases").value) || 0;
-       const reportedStockValue = getReportStock(item.id);
-       report += "・" + item.name + "：" + (casesValue > 0 ? casesValue + "ケース" : reportedStockValue + "本") + "\n";
-   });
-    kaidashiBackItems.forEach(item => { // テキーラを含む
-        const reportedStockValue = getReportStock(item.id);
-        const isSupply = item.name.includes('予備');
-        const unit = isSupply ? "個" : "本";
-        if (!isSupply) { // 備品以外（飲み物）を報告
-            report += "・" + item.name + "：" + reportedStockValue + unit + "\n";
-        }
-    });
-   // report += "・テキーラ(ゴールド)：..." // kaidashiBackItemsのループで処理されるため削除
-   // report += "・テキーラ(シルバー)：..." // kaidashiBackItemsのループで処理されるため削除
+
+   report += "<バック在庫>\n";
+   report += "・ストロング\n";
+   report += "(レモン：" + getReportStock("kaidashi_strong_lemon") + "\n";
+   report += "(グレフル：" + getReportStock("kaidashi_strong_greful") + "\n";
+   report += "(ドライ：" + getReportStock("kaidashi_strong_dry") + "\n";
+   report += "(シークワーサー：" + getReportStock("kaidashi_strong_shikuwasa") + "\n";
+   report += "・淡麗：" + getReportStock("kaidashi_tanrei") + "\n";
+   report += "・コーラ：" + getReportStock("kaidashi_cola") + "\n";
+   report += "・ジンジャー：" + getReportStock("kaidashi_ginger") + "\n";
+   report += "・炭酸水：" + getReportStock("kaidashi_tansan") + "\n";
+   report += "・オレンジ：" + getReportStock("kaidashi_orange") + "\n";
+   report += "・無糖紅茶：" + getReportStock("kaidashi_mutou_tea") + "\n";
+   report += "・テキーラ(ゴールド)：" + getReportStock("kaidashi_tequila_gold") + "\n";
+   report += "・テキーラ（シルバー）：" + getReportStock("kaidashi_tequila_silver") + "\n";
+   report += "・カフェパリ(ピーチ)：" + getReportStock("kaidashi_cafe_paris_peach") + "\n";
+   report += "・カフェパリ(サクランボ)：" + getReportStock("kaidashi_cafe_paris_sakuranbo") + "\n";
+   report += "・マティーニブリュット：" + getReportStock("kaidashi_martini_brut") + "\n";
+   report += "・マティーニアスティ：" + getReportStock("kaidashi_martini_asti") + "\n";
+   report += "・オリシャン：" + getReportStock("houkoku_original_champagne") + "\n";
+   report += "・ノンアルオリシャン：" + getReportStock("houkoku_non_alcohol_champagne") + "\n";
+   report += "・モエ：" + getReportStock("houkoku_moet") + "\n";
+
    report += "\n<冷蔵庫内>\n";
-   report += "・オリシャン：" + (parseInt(document.getElementById("houkoku_original_champagne").value) || 0) + "本\n";
-   report += "・ノンアルオリシャン：" + (parseInt(document.getElementById("houkoku_non_alcohol_champagne").value) || 0) + "本\n";
-   report += "・モエ：" + (parseInt(document.getElementById("houkoku_moet").value) || 0) + "本\n";
-   report += "\n<その他備品>\n";
-   report += "・伝票：" + (parseInt(document.getElementById("houkoku_denpyo").value) || 0) + "本\n";
-   report += "・ティッシュ：" + (parseInt(document.getElementById("houkoku_tissue").value) || 0) + "箱\n";
-   report += "・ペーパータオル：" + (parseInt(document.getElementById("houkoku_paper_towel").value) || 0) + "個\n";
-   report += "・おしぼり予備：" + (parseInt(document.getElementById("houkoku_oshibori").value) || 0) + "個\n";
-    kaidashiBackItems.forEach(item => { // 備品のみを報告
-        const reportedStockValue = getReportStock(item.id);
-        const isSupply = item.name.includes('予備');
-        if (isSupply) {
-            const unit = "個";
-            report += "・" + item.name + "：" + reportedStockValue + unit + "\n";
-        }
-    });
-   // ゴミ袋のレポート出力は削除
+   report += "・ベルエ：" + getReportStock("houkoku_belle_epoque") + "\n";
+
+   report += "\n<その他>\n";
+   report += "・伝票：" + getReportStock("houkoku_denpyo") + "\n";
+   report += "・ティッシュ：" + getReportStock("houkoku_tissue") + "\n";
+   report += "・ペーパータオル：" + getReportStock("houkoku_paper_towel") + "\n";
+   report += "・おしぼり(予備)：" + getReportStock("houkoku_oshibori") + "\n";
+   // 「アルコール除菌(予備)」として「ウェットティッシュ予備」の数を取得
+   report += "・アルコール除菌(予備)：" + getReportStock("kaidashi_wet_tissue") + "\n";
 
    document.getElementById("reportOutput").value = report;
   }
